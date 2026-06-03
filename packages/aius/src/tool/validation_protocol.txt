@@ -1,0 +1,22 @@
+Freeze a deterministic cross-validation protocol so every model is scored the SAME way — the foundation for a fair baseline comparison.
+
+This is the FIRST thing you do in the achieving-goals stage, before training anything. It runs in Aius's own Python (not your notebook), so the split can't be fudged: the folds, the metric, and the held-out ground truth are written to disk once and frozen.
+
+Writes `output/validation/<goal-slug>/`:
+- `cv_plan.json` — strategy, n_folds, seed, target
+- `metric.json` — the metric + its direction (maximize/minimize)
+- `folds/fold_i.json` — `train_idx` / `test_idx` (row positions into your data file)
+- `ground_truth/fold_i.json` — the held-out y for each fold (scorer input; you never see it while training)
+- `predictions/` — where you write each model's per-fold predictions
+- `scorer.py` — a standalone, reproducible scorer (same math as validation_score)
+- `description.md` — the human-readable protocol card
+
+Splitting strategy is chosen for you:
+- classification → StratifiedKFold (shuffled, seeded)
+- regression → KFold (shuffled, seeded)
+- `group_col` set → GroupKFold (a group never spans train and test)
+- `time_col` set → TimeSeriesSplit (train on the past, test on the future)
+
+Metric registry (pick one): roc_auc, pr_auc, log_loss, accuracy, f1, f1_macro (classification); mae, rmse, mse, r2 (regression). roc_auc / pr_auc / log_loss consume class-1 probabilities; the rest consume hard predictions.
+
+Use the model-ready dataset under `data/processed/` (never `data/raw/`). After this, train each model against the frozen folds and score it with `validation_score`. Reconstruct the reported baseline first and score it as `baseline` so every model is measured against the same yardstick on the same split.

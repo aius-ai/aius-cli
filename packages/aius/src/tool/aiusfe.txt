@@ -1,0 +1,21 @@
+Run AiusFE — LLM-driven evolutionary feature engineering with LightGBM — for a goal where the tooling intent is `explainability`.
+
+AiusFE iteratively rewrites a `modify_features(df_train, df_test, y_train)` Python function, scoring each variant via 4-fold inner CV, and returns the top-3 candidates per outer fold along with their generated features and inner-CV scores. The output is a short, human-readable feature ranking with directional effects — the kind of thing that ships to a stakeholder deck.
+
+When to use:
+- The goal has `tooling.intent == "explainability"` in `goals.json`.
+- The user explicitly asks for explainable feature engineering on a tabular dataset.
+
+When NOT to use:
+- `tooling.intent == "result"`. Standard sklearn beats AiusFE on raw accuracy and runs in seconds, not minutes. Reach for AiusFE only when the user needs to UNDERSTAND why the model fires.
+- Large datasets (> 200k rows). AiusFE's inner CV multiplies the training cost.
+
+Operation:
+1. First call clones the AiusFE repo into `.aius/vendor/aiusfe/` and runs `uv sync` there. This takes a couple of minutes the first time; cached after.
+2. Writes a problem spec file at `.aius/vendor/aiusfe/specs/aius-<goal-slug>.txt` from the `spec_text` you supply. See the AiusFE README and `specs/specification_*.txt` examples for the format — you write the `<Task>` block, the starter `modify_features` body, and Aius fills in `[FEATURES]` / `[EXAMPLES]` from the dataset.
+3. Runs `uv run --project .aius/vendor/aiusfe python main.py --api_model gpt-oss-groq --problem_name <slug> --spec_path <spec> --log_path .aius/vendor/aiusfe/logs/<slug>`.
+4. Returns the top-3 candidate features and their inner-CV scores; the candidates are also written to `output/notebooks/<slug>/aiusfe-features.json`.
+
+Then, notebook-first: in your goal notebook (`output/notebooks/<slug>/notebook.ipynb`), rebuild the winning features, train a model on them against the frozen validation_protocol folds, write per-fold predictions to `output/validation/<slug>/predictions/aiusfe.json`, and call `validation_score(goal_id, model_name="aiusfe")`. AiusFE's inner-CV numbers are only for picking features — the leaderboard number must come from the protocol, exactly like every other model. There is no run.py; all coding lives in the notebook.
+
+The OpenRouter API key is reused from your Aius auth — no extra config needed.

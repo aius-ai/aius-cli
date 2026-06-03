@@ -1,0 +1,13 @@
+Advance the pipeline to the next stage.
+
+This is how you keep the project moving. After each stage's deliverable is in place — CONTEXT.md written, observations saved, goals.json drafted, goals achieved (models trained / artifacts built), dashboards rendered — call this tool to mark the current stage complete and step into the next one.
+
+There are three kinds of stages:
+
+- **Auto stages** (init, context_build, discovery, goal_extract, cleaning, achieving_goals, dashboards): advance freely as soon as the output exists. You do not need user permission; the user expects forward motion.
+- **Soft HITL gates** (context_review, discovery_review): the user is invited to skim the artifact in VS Code. You may advance when the user says "continue" — or proactively if they have not said anything but the artifact has obviously been read.
+- **Hard HITL gate** (goal_review): never advance without the user explicitly saying "continue". The user is the only one who can sign off on the goals contract. If they have not, refuse — even if they sent a regular chat message in the meantime.
+
+If you call this tool from a HITL gate without a continue signal, it will return an error and the stage stays put. Do not retry with `force=true` unless the user has actually said continue.
+
+After advancing, immediately start the next stage's work — do not wait for prompting. The user has already told you the pipeline must keep moving.

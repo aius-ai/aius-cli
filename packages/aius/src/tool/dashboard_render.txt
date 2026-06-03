@@ -1,0 +1,32 @@
+Render a single-HTML dashboard for a goal.
+
+The output is `output/dashboards/<goal-slug>.html` — a self-contained file the user can open in a browser, attach to an email, or hand off to the client. It uses the Aius dark brand chrome (gradient wordmark title, brand palette) and Apache ECharts (loaded from CDN) for interactive, hoverable charts. No build step, no local runtime — just open the file.
+
+Sections rendered (in order):
+1. Header — eyebrow ("Aius · Goal g1 · slug"), gradient title, subtitle, success-criteria pills (green = met, amber = at risk, pink = missed).
+2. Headline metrics — KPI tiles (label, value, optional delta).
+3. Charts — interactive ECharts (bar / line / scatter / heatmap / gauge). PREFER these over PNGs.
+4. Figures — base64 PNGs for things ECharts can't do (e.g. a SHAP beeswarm).
+5. Slice metrics — table of per-slice numbers.
+6. Top features — feature-importance bars with direction markers.
+7. Methodology — collapsible details with cleaning steps and choices.
+8. Footer — generated-at timestamp, commit SHA, seed.
+
+Charts are the centrepiece. Each chart is `{ title, option, span?, caption? }` where `option` is a RAW ECharts option object you compose yourself — full control over series, axes, tooltips, dataZoom. Build the option in your notebook (you already have the numbers there), then pass the JSON straight through. The Aius dark theme (`'aius'`) is registered and applied automatically, so DON'T set colors, backgroundColor, or textStyle — just the data and chart type. Use `span: "full"` for a wide chart, otherwise charts lay out two-up.
+
+Example option for a ROC curve:
+  { "xAxis": { "type": "value", "name": "FPR" }, "yAxis": { "type": "value", "name": "TPR" },
+    "series": [ { "type": "line", "smooth": true, "data": [[0,0],[0.1,0.6],[1,1]] } ] }
+
+Use `figures` (base64 PNG) only when a chart genuinely can't be expressed as an ECharts option. Read the PNG from output/notebooks/<slug>/artifacts/ and base64-encode it.
+
+Call this once you have the numbers computed:
+- subtitle (one line; defaults to the goal outcome)
+- Primary metrics (1–4 KPIs)
+- A success-criteria evaluation per criterion from `goals.json`
+- Charts (interactive ECharts options) and/or figures (PNG)
+- Slice table (if relevant)
+- Feature importance (if relevant)
+- A short methodology log
+
+Open the file in a browser to verify the charts render before declaring the goal complete.

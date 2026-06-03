@@ -1,0 +1,5 @@
+Deeply ingest the whole project context — call this FIRST in context_build, before writing CONTEXT.md.
+
+It deterministically extracts the FULL content of every file in context/ (PDF → text, HTML → text, md/txt verbatim) and a deep profile of every dataset in data/raw/ (row count, every column's dtype / null% / cardinality / sample values, numeric summary), and writes it all to `output/context/ingest.md`.
+
+This exists because reading file heads misses things — baselines buried in a long email, column dictionaries, footnotes. After calling this, READ `output/context/ingest.md` in full, then write CONTEXT.md grounded in it (including any reported baselines/benchmarks you find). You cannot leave context_build until the ingest file exists.

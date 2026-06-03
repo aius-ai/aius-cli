@@ -1,0 +1,11 @@
+Move an artifact a notebook produced into its stage home under output/.
+
+Notebooks write figures/tables/files into `output/notebooks/<slug>/artifacts/`. When one is worth keeping as a deliverable, publish it:
+
+  publish_artifact(slug="01-imbalance", artifact="fig_class_balance.png", destination="discovery/01-imbalance/evidence")
+
+- `slug` — the notebook that produced it.
+- `artifact` — the filename inside that notebook's artifacts/ dir.
+- `destination` — a path UNDER output/ (e.g. `discovery/<slug>/evidence`, `models/<goal>`, `dashboards`). Created if missing.
+
+The artifact is copied to `output/<destination>/<artifact>` (the original stays in artifacts/ as the notebook's record). Destinations outside output/ are rejected.

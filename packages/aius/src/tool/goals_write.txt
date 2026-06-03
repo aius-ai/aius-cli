@@ -1,0 +1,18 @@
+Write the goals contract to `.aius/goals.json`.
+
+This is the most important document in the project. The user reviews and edits it during the `goal_review` HITL gate, and the entire downstream pipeline (cleaning → achieving goals → dashboards) derives from it. Treat the schema strictly:
+
+Every goal needs:
+- `id` (`g1`, `g2`, …) — stable handle for `depends_on` references
+- `slug` (kebab-case) — used to name output folders (`output/notebooks/<slug>/`)
+- `type` — `modeling` | `artifact` | `question`
+- `title` — short, business-readable
+- `outcome` — one paragraph: what the user gets at the end. No fluff, no "we will train a model". Say what the user can take to the meeting.
+- `success_criteria` — at least one, each with a `metric`, a numeric `target` (e.g., `>= 0.78`, `<= 0.20`), and a `rationale` tied to the brief or an industry baseline. Goals without measurable targets are wishes, not goals — they will be rejected.
+- `data` — `source` path under `data/raw/` (or `data/processed/` after cleaning), optional `target` column for modeling, optional `filters`
+- `tooling.intent` — `result` (simple ML; LR/GBM), `explainability` (use `aiusfe`), `artifact` (one-off), `question` (evidence-backed answer)
+- `tooling.primary` — chosen estimator/library
+- `deliverables` — what gets produced (`notebook`, `model_card`, `feature_report`, `dashboard`, `report`)
+- `depends_on` (optional) — ids of upstream goals that must complete first
+
+The tool validates the file before writing. If validation fails it returns the issues; fix them and retry. On success, `current_stage` advances to `goal_review` so the user can review.

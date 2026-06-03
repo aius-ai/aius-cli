@@ -1,0 +1,36 @@
+.DS_Store
+node_modules
+.worktrees
+.sst
+.env
+.env.local
+.idea
+.vscode
+.codex
+*~
+playground
+tmp
+dist
+ts-dist
+.turbo
+**/.serena
+.serena/
+/result
+refs
+Session.vim
+/aius.json
+a.out
+target
+.scripts
+.direnv/
+
+# Local dev files
+aius-dev
+UPCOMING_CHANGELOG.md
+logs/
+*.bun-build
+tsconfig.tsbuildinfo
+
+# Python bytecode (broker / validation scorer)
+__pycache__/
+*.pyc

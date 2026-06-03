@@ -1,0 +1,12 @@
+Score a model's per-fold predictions through the frozen validation protocol and add it to the leaderboard.
+
+Scoring runs in Aius's own Python against the held-out ground truth you never saw while training — so the number is honest and directly comparable to every other model on the same folds and the same metric.
+
+Workflow (after validation_protocol):
+1. For each fold i, read `output/validation/<slug>/folds/fold_i.json` → train on `train_idx`, predict on `test_idx`.
+2. Write predictions to `output/validation/<slug>/predictions/<model_name>.json` as {"0": [...fold-0 preds...], "1": [...], ...}, each list aligned with that fold's test_idx order. For probabilistic metrics (roc_auc/pr_auc/log_loss) write class-1 probabilities; otherwise hard predictions.
+3. Call this tool with goal_id + model_name (omit `predictions` — it reads the file).
+
+Returns the model's mean ± std across folds, its rank, and the full leaderboard (ranked by the metric's direction). `leaderboard.json` is updated in place; re-scoring the same model_name overwrites its row.
+
+Always score the reconstructed baseline as `baseline` so the deltas you report on the dashboard are real — same data, same split, same metric.

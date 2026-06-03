@@ -1,0 +1,17 @@
+Build and run a Jupyter notebook. This is how ALL coding happens in Aius — you do not run Python any other way.
+
+A notebook is identified by its `slug` (kebab-case). It lives at `output/notebooks/<slug>/notebook.ipynb`. Anything the notebook writes to disk (figures, CSVs, models) lands in `output/notebooks/<slug>/artifacts/` — the kernel's working directory — so `plt.savefig("roc.png")` or `df.to_parquet("clean.parquet")` need no path prefix.
+
+Workflow:
+1. `notebook_create(slug, title)` once per notebook.
+2. `notebook_add_code(slug, source)` to append a code cell (it does NOT run yet), then `notebook_run(slug)` to execute that last cell on the notebook's persistent kernel — state carries across cells like a real notebook. Iterate: add → run → read output → add the next cell.
+3. `notebook_add_markdown(slug, text)` for narrative between code cells.
+4. If a cell was wrong: `notebook_replace_last(slug, source)` or `notebook_delete_last(slug)` (both restart the kernel cleanly on the next run).
+5. `notebook_run_all(slug)` re-runs the whole notebook top-to-bottom on a fresh kernel — do this once at the end to prove the notebook is reproducible and to embed figures.
+6. `notebook_show(slug)` lists every cell; `notebook_output(slug, cellIndex?)` shows captured output.
+
+The environment has a FIXED library set (pandas, numpy, scipy, scikit-learn, lightgbm, xgboost, statsmodels, matplotlib, seaborn, pyarrow, shap, joblib). You CANNOT install packages — there is no install path and `!pip install` in a cell does nothing useful. Work within the available libraries.
+
+Determinism: seed every randomized op with 42.
+
+After a notebook produces an artifact worth keeping, `publish_artifact(slug, filename, destination)` moves it to its stage home (e.g. `discovery/01-imbalance/evidence`, `models/g1-logreg`, `dashboards`).

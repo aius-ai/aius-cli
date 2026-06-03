@@ -1,0 +1,5 @@
+Load `.aius/goals.json` from disk and return its contents.
+
+Use this at the start of the cleaning, achieving-goals, and dashboard stages to find out which goals you are working towards. The file is the user-edited contract — trust what it says, even if the agent's earlier draft was different.
+
+Returns the full goals list, validation status, and whether the user reviewed/edited the file since it was generated.

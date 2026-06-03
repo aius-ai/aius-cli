@@ -1,0 +1,20 @@
+Train AutoGluon 1.5 Extreme (path C — "best result") for a modeling goal, scored through the goal's validation protocol.
+
+This is the HEAVY path. It trains an AutoGluon TabularPredictor with the `extreme_quality` preset on every fold of the frozen validation protocol, for up to 4 hours, CPU-only (no GPU), with the TabM model excluded. Reach for it only when the user explicitly wants the strongest possible model and accepts the cost — for most goals, path B (a simple combination of standard estimators) is the right default.
+
+Prerequisites:
+- The goal's validation_protocol must already exist (call validation_protocol first). AutoGluon trains on its exact folds so the result is comparable to the baseline and every other model.
+- `uv` must be installed (the env is isolated from the locked project venv).
+
+What happens:
+1. A RED heavy-work confirmation is shown. The user must deliberately choose "Run for up to Nh" — Cancel is the default. If they cancel, nothing runs.
+2. On first use, a ~2GB AutoGluon env is built in `.aius/vendor/autogluon/` (one-time, cached).
+3. AutoGluon trains per fold (the time budget is split across folds), predicting on each held-out fold, and writes per-fold predictions to `output/validation/<goal-slug>/predictions/autogluon.json`.
+4. You then call `validation_score(goal_id, model_name="autogluon")` to put it on the leaderboard.
+
+Parameters:
+- `goal_id` — the goal (its protocol must exist).
+- `time_limit_seconds` — total budget across all folds, capped at 14400 (4h). Default 14400.
+- `presets` — AutoGluon preset, default `extreme_quality`.
+
+It does not compute its own score — like every model, the leaderboard number comes from validation_score on the frozen protocol.

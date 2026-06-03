@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@aius-ai/cli",
+  "version": "1.15.11",
+  "description": "AIUS - an autonomous data-science agent in your terminal.",
+  "license": "MIT",
+  "type": "module",
+  "homepage": "https://aius.co",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aius-ai/aius-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aius-ai/aius-cli/issues"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "tui",
+    "cli",
+    "data-science",
+    "aius"
+  ],
+  "bin": {
+    "aius": "./bin/aius"
+  },
+  "files": [
+    "bin/aius",
+    "postinstall.mjs",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "postinstall": "node ./postinstall.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "optionalDependencies": {
+    "aius-darwin-arm64": "1.15.11",
+    "aius-darwin-x64": "1.15.11",
+    "aius-darwin-x64-baseline": "1.15.11",
+    "aius-linux-arm64": "1.15.11",
+    "aius-linux-arm64-musl": "1.15.11",
+    "aius-linux-x64": "1.15.11",
+    "aius-linux-x64-baseline": "1.15.11",
+    "aius-linux-x64-musl": "1.15.11",
+    "aius-linux-x64-baseline-musl": "1.15.11",
+    "aius-windows-arm64": "1.15.11",
+    "aius-windows-x64": "1.15.11",
+    "aius-windows-x64-baseline": "1.15.11"
+  }
+}

@@ -1,0 +1,17 @@
+Record a discovery observation as a self-contained, reviewable folder.
+
+Discovery is the most important part of the project — go deep and produce many figures. Each distinct finding becomes ONE observation: build a focused, professionally-written notebook (meaningful slug, markdown narrative between code cells, several figures saved to its artifacts/), then call `observe` to bundle it.
+
+  observe(
+    name="class-imbalance-by-placement",   # kebab-case, meaningful
+    notebook_slug="01-target-balance",      # the notebook that produced it
+    markdown="## Finding\n...what the figures show, why it matters for modeling...",
+    evidence=["balance_by_placement.png", "balance_table.png"]   # >=1 figure from the notebook's artifacts/
+  )
+
+This creates `output/discovery/<name>/` containing:
+  - observation.md   — your writeup
+  - notebook.ipynb   — a snapshot of the notebook that produced it
+  - evidence/        — the figures you listed
+
+Requirements (enforced): a meaningful kebab-case name, an existing notebook, and at least one evidence figure — an observation with no visual evidence is rejected. Produce several observations across the dataset (distributions, correlations, target relationships, missingness, segments, leakage checks, …) before leaving discovery.
