@@ -186,7 +186,7 @@ main() {
 
   step "Installing ${BOLD}${APP} ${version}${RESET} (${asset}) → ${INSTALL_DIR}"
 
-  tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
+  tmp=$(mktemp -d); trap 'rm -rf "${tmp:-}"' EXIT
   archive="$tmp/${asset}.${ext}"
   step "Downloading ${DIM}${url}${RESET}"
   curl -fSL --progress-bar "$url" -o "$archive" \
