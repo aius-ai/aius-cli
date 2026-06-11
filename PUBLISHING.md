@@ -13,8 +13,9 @@ From the repo root (requires Bun ≥ 1.3):
 ```sh
 bun install
 # Builds all platform targets into packages/aius/dist/*
-# Set the production gateway URL so it's baked into the binary:
-AIUS_API_URL=https://api.aius.co/v1 bun run packages/aius/script/build.ts
+# The production gateway URL (https://aius.co/api/v1) is baked in by default;
+# only set AIUS_API_URL at build time for special builds.
+AIUS_VERSION=<x.y.z> AIUS_RELEASE=1 GH_REPO=aius-ai/aius-cli bun run packages/aius/script/build.ts
 ```
 
 This emits, for each target, a `dist/<name>/bin/aius` binary plus, when

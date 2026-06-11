@@ -38,7 +38,7 @@ detect_os() {
   case "$(uname -s)" in
     Darwin) echo "darwin" ;;
     Linux)  echo "linux" ;;
-    *) die "unsupported OS '$(uname -s)'. On Windows use the PowerShell installer or 'npm i -g $APP'." ;;
+    *) die "unsupported OS '$(uname -s)'. On Windows use the PowerShell installer: irm https://aius.co/install.ps1 | iex" ;;
   esac
 }
 
@@ -70,6 +70,13 @@ is_musl() {
     ldd --version 2>&1 | grep -qi musl && return 0
   fi
   return 1
+}
+
+# The musl build links libstdc++ dynamically; stock Alpine doesn't ship it.
+# Fail up front with the fix instead of a cryptic relocation error at runtime.
+check_musl_deps() {
+  ls /usr/lib/libstdc++.so.6 /usr/lib/*/libstdc++.so.6 >/dev/null 2>&1 && return 0
+  die "musl system without libstdc++ — install it first (Alpine: apk add libstdc++ libgcc), then re-run this installer"
 }
 
 # Asset name mirrors packages/aius/script/build.ts:
@@ -179,6 +186,7 @@ main() {
   local os arch asset version ext url tmp archive
 
   os=$(detect_os); arch=$(detect_arch)
+  [ "$os" = "linux" ] && is_musl && check_musl_deps
   asset=$(asset_name "$os" "$arch")
   version=$(resolve_version)
   if [ "$os" = "linux" ]; then ext="tar.gz"; need tar; else ext="zip"; need unzip; fi
