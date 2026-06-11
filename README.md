@@ -42,19 +42,13 @@ Bun, or Python required.
 **macOS / Linux**
 
 ```sh
-curl -fsSL https://aius.co/install.sh | sh
+curl -fsSL https://aius.co/install.sh | bash
 ```
 
 **Windows** (PowerShell)
 
 ```powershell
 irm https://aius.co/install.ps1 | iex
-```
-
-**npm** (any platform with Node ≥ 18)
-
-```sh
-npm install -g @aius-ai/cli
 ```
 
 The installer drops the `aius` binary (and its `uv` sidecar) into `~/.aius/bin`

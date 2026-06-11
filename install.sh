@@ -38,7 +38,7 @@ detect_os() {
   case "$(uname -s)" in
     Darwin) echo "darwin" ;;
     Linux)  echo "linux" ;;
-    *) die "unsupported OS '$(uname -s)'. On Windows use the PowerShell installer or 'npm i -g $APP'." ;;
+    *) die "unsupported OS '$(uname -s)'. On Windows use the PowerShell installer: irm https://aius.co/install.ps1 | iex" ;;
   esac
 }
 
