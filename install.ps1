@@ -126,10 +126,12 @@ try {
   if (-not (Test-Path (Join-Path $tmp 'aius.exe'))) { Die "archive did not contain aius.exe" }
 
   New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
-  # The binary resolves uv/uvx as siblings, so install all three together.
+  # The binary resolves uv/uvx as siblings — an asset missing them would
+  # install a CLI that breaks at first Python use, so require all three.
   foreach ($f in 'aius.exe', 'uv.exe', 'uvx.exe') {
     $src = Join-Path $tmp $f
-    if (Test-Path $src) { Copy-Item -Force $src (Join-Path $InstallDir $f) }
+    if (-not (Test-Path $src)) { Die "archive is missing '$f' — corrupt or mis-built release asset" }
+    Copy-Item -Force $src (Join-Path $InstallDir $f)
   }
 
   $exe = Join-Path $InstallDir 'aius.exe'

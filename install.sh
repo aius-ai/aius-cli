@@ -74,8 +74,13 @@ is_musl() {
 
 # The musl build links libstdc++ dynamically; stock Alpine doesn't ship it.
 # Fail up front with the fix instead of a cryptic relocation error at runtime.
+# Probe candidate paths one at a time: a single `ls a b` exits non-zero when ANY
+# path is absent, which rejected Alpine systems that DO have libstdc++.
 check_musl_deps() {
-  ls /usr/lib/libstdc++.so.6 /usr/lib/*/libstdc++.so.6 >/dev/null 2>&1 && return 0
+  local lib
+  for lib in /usr/lib/libstdc++.so.6 /usr/lib/*/libstdc++.so.6 /lib/libstdc++.so.6; do
+    [ -e "$lib" ] && return 0
+  done
   die "musl system without libstdc++ — install it first (Alpine: apk add libstdc++ libgcc), then re-run this installer"
 }
 
@@ -210,9 +215,11 @@ main() {
   [ -f "$tmp/aius" ] || die "archive did not contain an 'aius' binary"
 
   mkdir -p "$INSTALL_DIR"
-  # The binary needs uv/uvx as siblings (the runtime resolves them next to it).
+  # The binary needs uv/uvx as siblings (the runtime resolves them next to it) —
+  # an asset missing them would install a CLI that breaks at first Python use.
   for f in aius uv uvx; do
-    [ -f "$tmp/$f" ] && install -m 0755 "$tmp/$f" "$INSTALL_DIR/$f"
+    [ -f "$tmp/$f" ] || die "archive is missing '$f' — corrupt or mis-built release asset"
+    install -m 0755 "$tmp/$f" "$INSTALL_DIR/$f"
   done
 
   # macOS: copying a Bun single-file executable invalidates its code signature,
