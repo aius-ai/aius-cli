@@ -18,6 +18,20 @@ GH_REPO="${AIUS_GH_REPO:-aius-ai/aius-cli}"
 INSTALL_DIR="${AIUS_INSTALL_DIR:-$HOME/.aius/bin}"
 REQUESTED_VERSION="${AIUS_VERSION:-latest}"
 
+# Keep the installer-owned scratch path outside main's local scope. A trap that
+# expands a local variable after main returns sees an empty value in Bash 3.2,
+# leaving downloaded archives and extracted binaries behind.
+INSTALL_TMP_DIR=""
+cleanup_install_tmp() {
+  if [ -n "$INSTALL_TMP_DIR" ] && [ -d "$INSTALL_TMP_DIR" ] && [ "$INSTALL_TMP_DIR" != "/" ]; then
+    rm -rf "$INSTALL_TMP_DIR" || true
+  fi
+  INSTALL_TMP_DIR=""
+}
+trap cleanup_install_tmp EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
 # ---- pretty output -----------------------------------------------------------
 if [ -t 1 ]; then
   BOLD=$(printf '\033[1m'); DIM=$(printf '\033[2m'); RED=$(printf '\033[31m')
@@ -188,7 +202,7 @@ validate_install_dir() {
 main() {
   need curl
   validate_install_dir
-  local os arch asset version ext url tmp archive
+  local os arch asset version ext url archive
 
   os=$(detect_os); arch=$(detect_arch)
   [ "$os" = "linux" ] && is_musl && check_musl_deps
@@ -199,8 +213,9 @@ main() {
 
   step "Installing ${BOLD}${APP} ${version}${RESET} (${asset}) → ${INSTALL_DIR}"
 
-  tmp=$(mktemp -d); trap 'rm -rf "${tmp:-}"' EXIT
-  archive="$tmp/${asset}.${ext}"
+  INSTALL_TMP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/aius-installer.XXXXXXXX") \
+    || die "could not create a temporary installer directory"
+  archive="$INSTALL_TMP_DIR/${asset}.${ext}"
   step "Downloading ${DIM}${url}${RESET}"
   curl -fSL --progress-bar "$url" -o "$archive" \
     || die "download failed. Asset may not exist for this platform/version: ${asset}.${ext}"
@@ -210,16 +225,18 @@ main() {
   assert_safe_archive "$archive" "$ext"
 
   step "Unpacking"
-  if [ "$ext" = "tar.gz" ]; then tar -xzf "$archive" -C "$tmp"; else unzip -q -o "$archive" -d "$tmp"; fi
+  if [ "$ext" = "tar.gz" ]; then tar -xzf "$archive" -C "$INSTALL_TMP_DIR"; else unzip -q -o "$archive" -d "$INSTALL_TMP_DIR"; fi
 
-  [ -f "$tmp/aius" ] || die "archive did not contain an 'aius' binary"
+  [ -f "$INSTALL_TMP_DIR/aius" ] || die "archive did not contain an 'aius' binary"
 
   mkdir -p "$INSTALL_DIR"
   # The binary needs uv/uvx as siblings (the runtime resolves them next to it) —
   # an asset missing them would install a CLI that breaks at first Python use.
   for f in aius uv uvx; do
-    [ -f "$tmp/$f" ] || die "archive is missing '$f' — corrupt or mis-built release asset"
-    install -m 0755 "$tmp/$f" "$INSTALL_DIR/$f"
+    [ -f "$INSTALL_TMP_DIR/$f" ] || die "archive is missing '$f' — corrupt or mis-built release asset"
+  done
+  for f in aius uv uvx; do
+    install -m 0755 "$INSTALL_TMP_DIR/$f" "$INSTALL_DIR/$f"
   done
 
   # macOS: copying a Bun single-file executable invalidates its code signature,
